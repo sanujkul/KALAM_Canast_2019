@@ -67,13 +67,10 @@ void setup() {
   dataPacket.software_state = BOOT;
 } 
 
-//long loopStartTime = 0;
-//long loopEndTime = 0;
-
 void loop() {
-//  loopStartTime = millis()/10000;
+  
   mpu6050.update();
-  if(millis()-timer > 1000){
+  if(1){
     packetCount++;
     //====================================PACKET_COUNT
     dataPacket.packet_count = packetCount;
@@ -90,7 +87,7 @@ void loop() {
     dataPacket.voltage = getBatteryVoltage();
     //====================================GPS====================================================
     setGPSValues();
-    smartDelay(100);
+    smartDelay(900);
 //====================================SOFTWARE STATE====================================================
     setSoftwareState();
     //====================================BLADE_SPIN=====================================================
@@ -102,21 +99,10 @@ void loop() {
     //Sending data via xbee
     savePacket(&dataPacket);
     transmitPacketString(&dataPacket);
-      
-//    Serial.print(String(dataPacket.mission_time)+"\t"+String(dataPacket.altitude)+"\t"+String(dataPacket.pressure)+"\t"+String(dataPacket.temperature));
-//    Serial.println("\t"+String(dataPacket.pitch)+"\t"+String(dataPacket.roll));
     
-    timer = millis();
+//    timer = millis();
   }
-//  loopEndTime = millis()/10000;
-//
-//  long timeDiff = (loopEndTime - loopStartTime);
-//  if(timeDiff < 0) {
-//    timeDiff = 10000 + timeDiff;
-//  }
-//  while(millis()-timeDiff < 1000){
-//    //Do NOTHING
-//  }
+
 }
 
 void setGPSValues(){
