@@ -31,6 +31,7 @@ void smartDelay(unsigned long ms)
   do 
   {
     while (gps_uart.available())
+//      mpu6050.update();
       gps.encode(gps_uart.read());
   } while (millis() - start < ms);
 }
@@ -76,5 +77,3 @@ String getDateTime2(TinyGPSTime &t)
   }
   smartDelay(0);
 }
-
-

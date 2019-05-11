@@ -1,4 +1,4 @@
-//IMPORTANT : MPU toc library change address to 0x69
+//IMPORTANT : MPU address to 0x69
             //AD0 pin high
 #include "pindef.h"
 
@@ -8,7 +8,8 @@ uint64_t packetCount = 0;
 //////////////////////////I2C Objects Initialization=================================
 Adafruit_BMP280 bmp;    //1. BMP object: I2C interface //Used "Wire"
 RTC_DS3231 rtc;         //2. RTC object: I2C interface //Used "Wire"
-MPU6050 mpu6050(Wire);  //3. MPU6050 object
+//Removing following MPU library object
+//MPU6050 mpu6050(Wire);  //3. MPU6050 object
 
 //////////////////////////GPS Object Initialization=================================
 TinyGPSPlus gps;        //4. The TinyGPS++ object
@@ -40,9 +41,10 @@ void setup() {
   initBmp();            //BMP
   initRTC();            //RTC
   resetMissionTime();   //To initialize the startTime variable
-  mpu6050.begin();      //MPU
-  mpu6050.calcGyroOffsets(true);
-  
+  //Replacing below two library lines:
+//  mpu6050.begin();      //MPU
+//  mpu6050.calcGyroOffsets(true);
+  mpuInIt();
   //UART Devices Initialization===============================
   xbee.begin(9600);       //XBEE initializing
   initXBee();
@@ -68,10 +70,6 @@ void setup() {
 } 
 
 void loop() {
-  
-  mpu6050.update();
-  smartDelay(900);
-  if(1){
     packetCount++;
     //====================================PACKET_COUNT
     dataPacket.packet_count = packetCount;
@@ -85,10 +83,11 @@ void loop() {
     dataPacket.voltage = getBatteryVoltage();
     //====================================GPS====================================================
     setGPSValues();
-    
+    smartDelay(900);
     //====================================MPU=========================================================
-    dataPacket.pitch = mpu6050.getAngleX();
-    dataPacket.roll  = mpu6050.getAngleY();
+    calculateGyroValues();
+    dataPacket.pitch = getMPURoll();
+    dataPacket.roll  = getMPUPitch();
 //====================================SOFTWARE STATE====================================================
     setSoftwareState();
     //====================================BLADE_SPIN=====================================================
@@ -100,9 +99,8 @@ void loop() {
     //Sending data via xbee
     savePacket(&dataPacket);
     transmitPacketString(&dataPacket);
-    
-//    timer = millis();
-  }
+  
+  
 
 }
 

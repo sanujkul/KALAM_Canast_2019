@@ -1,4 +1,4 @@
-#include <MPU6050_tockn.h>
+//#include <MPU6050_tockn.h>
 #include <RTClib.h>    //RTC Library
 #include <Arduino.h>   // required before wiring_private.h
 #include <Wire.h>                            
@@ -28,6 +28,8 @@
 #define HALLPIN 3
 
 #define BUZZERPIN 14
+
+#define MPU9250ADDRESS 0b1101001
 
 #define LOG_MISSION	//enable this to log mission events to SD card
 #define SER_DEBUG		//enable this to get debug info in serial monitor
