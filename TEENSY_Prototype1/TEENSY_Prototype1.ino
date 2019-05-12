@@ -73,7 +73,7 @@ void setup() {
 void loop() {
 //  loopStartTime = millis()/10000;
   mpu6050.update();
-  if(millis()-timer > 1000){
+  if(1){
     packetCount++;
     //====================================PACKET_COUNT
     dataPacket.packet_count = packetCount;
@@ -90,7 +90,7 @@ void loop() {
     dataPacket.voltage = getBatteryVoltage();
     //====================================GPS====================================================
     setGPSValues();
-    smartDelay(100);
+    smartDelay(1000);
 //====================================SOFTWARE STATE====================================================
     setSoftwareState();
     //====================================BLADE_SPIN=====================================================
