@@ -19,6 +19,7 @@ float Xgyr[10],Ygyr[10],Zgyr[10];
 #define MPU9250ADDRESS 0b1101001
 
 void mpuInIt(){
+  Serial.println(MPU9250ADDRESS,BIN);
   Wire.begin();
   Wire.setClock(400000);
   setupMPU();
@@ -37,9 +38,14 @@ void callibrateMPU(){
     rollSum += roll;
     pitchSum += pitch;
     if(i%20 == 0) Serial.print(".");
+    Serial.print(String(rollSum)+"\t");
+    Serial.println(pitchSum);
   }
   rollOffset = rollSum/2000;
   pitchOffset = pitchSum/2000;
+
+  Serial.println(rollOffset);
+  Serial.println(pitchOffset);
 }
 
 /*
