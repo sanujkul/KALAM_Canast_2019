@@ -11,7 +11,10 @@ void xbeeMessegeReceived(){
   switch(x){
     case 0:Serial.println("Recieved 0");
            break;
-    case 1:Serial.println("Recieved 1"); 
+    case 1:Serial.println("Recieved 1");
+           calibrateSensors(); 
+           break;
+    case 2:Serial.println("Recieved 1"); 
            break;
     case 9://Detach the interrupt and stop this ISR if user ground station sends 9
            detachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN));
@@ -23,7 +26,20 @@ void xbeeMessegeReceived(){
 }
 
 void calibrateSensors(){
-  
+  //detachInterrupt so that while callibrating nothing disturbs it
+  detachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN));
+  unsigned long startTime = millis();
+  //Now performing callibration commands: And suppose it will take 15 seconds
+  for(int i=0;i<15;i++){
+    Serial.println("Callibrating : "+String(i+1)+"second");
+    delay(1000);
+  }
+  Serial.println("Callibration Finished");
+  // Callibration finished:
+
+  //Let attachInterrupt again in case we need to recieve some more commands
+  attachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN), xbeeMessegeReceived, RISING);
 }
+
 //
 ////For transmitting data, function is in i_packet.ino
