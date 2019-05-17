@@ -293,7 +293,13 @@ void loop() {
 //      int servo1Value = map(ypr[1], -90, 90, 0, 180);
 //      int servo2Value = map(ypr[2], -90, 90, 180, 0);
 //      
-   
+
+      //TO KEEP RANGE OF YAW FROM -180 to 180
+      if(ypr[0] > 180){
+        ypr[0] = 360 - ypr[0];
+      }else if(ypr[0] < -180){
+        ypr[0] = 360 + ypr[0];
+      }
       
       Serial.println(String(ypr[0]));
       
