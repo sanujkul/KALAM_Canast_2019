@@ -12,7 +12,7 @@ void xbeeMessegeReceived(){
     case 0:Serial.println("Recieved 0");
            break;
     case 1:Serial.println("Recieved 1");
-           calibrateSensors(); 
+           calibrateSensors1(); 
            break;
     case 2:Serial.println("Recieved 1"); 
            break;
@@ -25,7 +25,7 @@ void xbeeMessegeReceived(){
   }
 }
 
-void calibrateSensors(){
+void calibrateSensors1(){
   //detachInterrupt so that while callibrating nothing disturbs it
   detachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN));
   unsigned long startTime = millis();
@@ -34,6 +34,10 @@ void calibrateSensors(){
     Serial.println("Callibrating : "+String(i+1)+"second");
     delay(1000);
   }
+
+  setGroundAltitude();  //FOR BMP
+  mpu6050.calcGyroOffsets(true); //FOR MPU
+  
   Serial.println("Callibration Finished");
   // Callibration finished:
 
