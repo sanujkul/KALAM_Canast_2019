@@ -206,6 +206,7 @@ void calculateYaw() {
 bool updateYaw() {
   if ((millis() - lastYawUpdate) > MPU_READ_DELAY) {
     inputYawVal = ypr[0] - correct; // Set the Yaw to 0 deg - subtract  the last random Yaw value from the currrent value to make the Yaw 0 degrees
+    lastYawUpdate = millis();
     return true;
   }
   return false;
@@ -311,8 +312,8 @@ void setup() {
   
   //if yaw is more than 50 degrees below or above setpoint, OUTPUT will be set to min or max respectively
   myPID.setBangBang(50);
-  //set PID update interval to 4000ms
-  myPID.setTimeStep(100);
+  //set PID update interval to 1000ms
+  myPID.setTimeStep(1000);
   
   setPoint = 0;
   //============================================================ 

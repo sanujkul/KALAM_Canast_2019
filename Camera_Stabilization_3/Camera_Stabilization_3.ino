@@ -30,6 +30,7 @@ Servo servo0;                     //SERVO ZERO IS FOR YAW:
 int servo0Speed = 1500;
 Servo servo1;
 Servo servo2;
+
 float correct;
 int j = 0;
 
@@ -135,11 +136,33 @@ void dmpDataReady() {
   Serial.print("GyroErrorZ: ");
   Serial.println(GyroErrorZ);
 }
+
+// ================================================================
+// ===                      CAMERA RELATED                       ===
+// ================================================================
+#define LONG_PRESS 3000
+#define PIN_CAMERA 4
+long cameraStartime = 0;
+
+void setupCamera(){
+  pinMode(PIN_CAMERA,OUTPUT);
+//  cameraStartime = millis();
+}
+
+void switchOnOffCamera(){
+  digitalWrite(PIN_CAMERA,HIGH);
+  delay(LONG_PRESS);
+  digitalWrite(PIN_CAMERA,LOW);
+}
+
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
 
 void setup() {
+  setupCamera();
+  switchOnOffCamera();
+  
   // join I2C bus (I2Cdev library doesn't do this automatically)
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
   Wire.begin();
@@ -275,15 +298,16 @@ void loop() {
     ypr[2] = ypr[2] * 180 / M_PI;
     
     // Skip 300 readings (self-calibration process)
-    if (j <= 300) {
+    if (j <= 2000) {
       correct = ypr[0]; // Yaw starts at random value, so we capture last value after 300 readings
       j++;
     }
     // After 300 readings
     else {
       //This "if" is for debugging purposes:
-      if(j == 301){
+      if(j == 2001){
         Serial.println("Auto Callibration Finishes");
+        
         j++;
       }
 
@@ -313,6 +337,7 @@ void loop() {
     }
 #endif
   }
+
 }
 
 void rotateServo(){
