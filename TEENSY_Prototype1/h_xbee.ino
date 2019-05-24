@@ -11,10 +11,14 @@ void xbeeMessegeReceived(){
   switch(x){
     case 0:Serial.println("Recieved 0");
            break;
-    case 1:Serial.println("Recieved 1");
+    case 1:Serial.println("Recieved 1: Callibration Command");
            calibrateSensors1(); 
            break;
-    case 2:Serial.println("Recieved 1"); 
+    case 2:Serial.println("Recieved 2: Buzzer Baja Do");
+           recieve2();
+           break;
+    case 3:Serial.println("Recieved 3: Buzzer Rok Do");
+           recieve3();
            break;
     case 9://Detach the interrupt and stop this ISR if user ground station sends 9
            detachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN));
@@ -30,8 +34,8 @@ void calibrateSensors1(){
   detachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN));
   unsigned long startTime = millis();
   //Now performing callibration commands: And suppose it will take 15 seconds
-  for(int i=0;i<15;i++){
-    Serial.println("Callibrating : "+String(i+1)+"second");
+  for(int i=0;i<2;i++){
+    Serial.println("Callibrating starts in: "+String(2-(i+1))+"second");
     delay(1000);
   }
 
@@ -42,6 +46,26 @@ void calibrateSensors1(){
   // Callibration finished:
 
   //Let attachInterrupt again in case we need to recieve some more commands
+  attachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN), xbeeMessegeReceived, RISING);
+}
+
+void recieve2(){
+  detachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN));
+  for(int i=0;i<2;i++){
+    Serial.println("Buzzer baja starts in: "+String(2-(i+1))+"second");
+    delay(1000);
+  }
+  buzzerBajaDo();
+  attachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN), xbeeMessegeReceived, RISING);
+}
+
+void recieve3(){
+  detachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN));
+  for(int i=0;i<2;i++){
+    Serial.println("Buzzer stops in: "+String(2-(i+1))+"second");
+    delay(1000);
+  }
+  buzzerRokDo();
   attachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN), xbeeMessegeReceived, RISING);
 }
 

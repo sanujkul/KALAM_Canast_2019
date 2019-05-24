@@ -137,10 +137,11 @@ void setSoftwareState(){
     dataPacket.software_state = ACCENT; //(i.e. 2)
   }else if(dataPacket.altitude > 670 && dataPacket.altitude < prevAlt && dataPacket.software_state == ACCENT){
     dataPacket.software_state = DEPLOYMENT; //(i.e. 3)
-  }else if(dataPacket.altitude < 450 && dataPacket.altitude < prevAlt && dataPacket.software_state == DEPLOYMENT){
+  }else if(dataPacket.altitude < 450 /*&& dataPacket.altitude < prevAlt*/ && dataPacket.software_state == DEPLOYMENT){
     dataPacket.software_state = DESCENT; //(i.e. 4)
-  }else if(dataPacket.altitude < 5 && dataPacket.altitude < prevAlt && dataPacket.software_state == DESCENT){
+  }else if(dataPacket.altitude < 5 /*&& dataPacket.altitude < prevAlt*/ && dataPacket.software_state == DESCENT){
     dataPacket.software_state = END; //(i.e. 5)
+    buzzerBajaDo();
   }
   prevAlt = dataPacket.altitude;
   Serial.println("PREVALT = "+String(prevAlt));
