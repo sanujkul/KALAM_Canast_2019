@@ -14,6 +14,9 @@ void setup() {
 }
 
 void loop() {
+
+  delay(10000);
+  
   //SWITCH ON/OFF
   Serial.println("ON");
     digitalWrite(13,HIGH);
