@@ -1,3 +1,4 @@
+bool startServoRotation;
 int servo0Speed = 1500;
 float yaw0 = 0;                    //This variable can be used to save yaw values
 float correct;
@@ -166,6 +167,7 @@ void calculateYaw() {
 // ================================================================
 
 void initStabilize() {
+  startServoRotation = false;
   
   // join I2C bus (I2Cdev library doesn't do this automatically)
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -245,15 +247,16 @@ void initStabilize() {
   // Define the pins to which the 3 servo motors are connected
   servo0.attach(10);
   
-  Serial.println("SETUP FINISHED");
+//  Serial.println("SETUP FINISHED");
 
   //SELF CALLIBRATION:
-  Serial.println("SELF CALLIBRATION STARTED");
+//  Seria/l.println("SELF CALLIBRATION STARTED");
   //For 2000 times, we'll record yaw values
   for(int i=0; i<2000; i++){
     calculateYaw();
     correct = ypr[0];
   }
+//  Serial.println("SELF CALLIBRATION STARTED");/
   //This will indicate that callibration is finished:
   pinMode(13,OUTPUT);
   digitalWrite(13,HIGH);
@@ -268,7 +271,8 @@ void stabilizeLoop() {
   calculateYaw();
   ypr[0] = ypr[0] - correct;
 
-  Serial.print(String(ypr[0]) + "\t");
+
+//  Serial.print(String(y/pr[0]) + "\t");
   
   //TO KEEP RANGE OF YAW FROM -180 to 180
   yaw0 = ypr[0];
@@ -277,13 +281,18 @@ void stabilizeLoop() {
   }else if(yaw0 < -180){
     yaw0 = 360 + ypr[0];
   }
+#ifdef SER_DEBUG
+  Serial.println("YAW : "+String(yaw0));  
+#endif
 
-  Serial.println(String(yaw0));  
-  //Logic 1:
-  rotateServo();  
-
-  //Logic 2:
-//  rotateServoClockwise();
+  
+  if(startServoRotation){
+    //Logic 1:
+    rotateServo();
+    //Logic 2:
+//  rotateServoClockwise();  
+  }
+  
 }
 ///////////////////////////////// LOGIC 1: Basic//////////////////////////////////////////
 ///////////////////////////////// To satbilize//////////////////////////////////////////
@@ -333,4 +342,13 @@ void rotateServoAntiClockwise(int servoSpeed){
 
 void stopServo(){
   servo0.writeMicroseconds(1500);
+}
+
+void setStartServoRotation(bool yes){
+  startServoRotation = yes;
+}
+
+String getYaw(){
+  int yaw0i = (int)yaw0;
+  return String(yaw0i);
 }

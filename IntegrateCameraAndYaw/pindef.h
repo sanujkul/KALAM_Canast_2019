@@ -19,3 +19,6 @@
 
 #define LONG_PRESS 3000
 #define PIN_CAMERA 4
+
+#define SER_DEBUG
+#undef SER_DEBUG//
