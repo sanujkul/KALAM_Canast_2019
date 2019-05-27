@@ -290,14 +290,13 @@ void stabilizeLoop() {
 
 void rotateServo(){
   if(yaw0 > 7){
-    servo0Speed = map(yaw0, 0, 50, 1425, 1395);
-    if(yaw0 > 50) 
+    servo0Speed = map(yaw0, 0, 70, 1425, 1395);
+    if(yaw0 > 70) 
         servo0Speed= 1000;
-    
     rotateServoClockwise(servo0Speed);
   }else if(yaw0 < -7){
-    servo0Speed = map(yaw0, -50, 0, 1585, 1555);
-    if(yaw0 < -50) 
+    servo0Speed = map(yaw0, -70, 0, 1585, 1555);
+    if(yaw0 < -70) 
         servo0Speed= 2000;
     rotateServoAntiClockwise(servo0Speed);
   }else{

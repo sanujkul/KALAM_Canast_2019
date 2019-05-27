@@ -12,7 +12,7 @@ MPU6050 mpu;                                          //Making a MPU6050 object!
 Servo servo0;                     //SERVO ZERO IS FOR YAW:
 
 void setup() {
-//  initCamera();
+  initCamera();
   
   // initialize serial communication
   // (115200 chosen because it is required for Teapot Demo output, but it's
@@ -21,19 +21,17 @@ void setup() {
   while (!Serial); // wait for Leonardo enumeration, others continue immediately
 
 
-//  initStabilize();
+  initStabilize();
    
 }
 
-
+//int count == 1
 
 void loop() {
   // put your main code here, to run repeatedly:
   stabilizeLoop();
+ 
+  
 
-  if(millis()>10000 && !isCameraOn())
-    switchOnOffCamera();
-
-  if(millis()>600000 && isCameraOn()){
-    switchOnOffCamera();
+  
 }
