@@ -1,42 +1,7 @@
-/*
-  DIY Gimbal - MPU6050 Arduino Tutorial
-  by Dejan, www.HowToMechatronics.com
-  Code based on the MPU6050_DMP6 example from the i2cdevlib library by Jeff Rowberg:
-  https://github.com/jrowberg/i2cdevlib
-*/
-// I2Cdev and MPU6050 must be installed as libraries, or else the .cpp/.h files
-// for both classes must be in the include path of your project
-#include "I2Cdev.h"
-
-#include "MPU6050_6Axis_MotionApps20.h"
-//#include "MPU6050.h" // not necessary if using MotionApps include file
-
-// Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
-// is used in I2Cdev.h
-#if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
-  #include "Wire.h"
-#endif
-
-#include <Servo.h>
-// class default I2C address is 0x68
-// specific I2C addresses may be passed as a parameter here
-// AD0 low = 0x68 (default for SparkFun breakout and InvenSense evaluation board)
-// AD0 high = 0x69
-MPU6050 mpu;                                          //Making a MPU6050 object!
-//MPU6050 mpu(0x69);                                  // <-- use for AD0 high
-
-// Define the 3 servo motors
-Servo servo0;                     //SERVO ZERO IS FOR YAW:
 int servo0Speed = 1500;
-//Servo servo1;
-//Servo servo2;
-
+float yaw0 = 0;                    //This variable can be used to save yaw values
 float correct;
 int j = 0;
-
-#define OUTPUT_READABLE_YAWPITCHROLL
-
-#define INTERRUPT_PIN 2  // use pin 2 on Arduino Uno & most boards
 
 bool blinkState = false;
 
@@ -125,16 +90,16 @@ void dmpDataReady() {
     GyroErrorY = GyroErrorY / 200;
     GyroErrorZ = GyroErrorZ / 200;
   // Print the error values on the Serial Monitor
-  Serial.print("AccErrorX: ");
-  Serial.println(AccErrorX);
-  Serial.print("AccErrorY: ");
-  Serial.println(AccErrorY);
-  Serial.print("GyroErrorX: ");
-  Serial.println(GyroErrorX);
-  Serial.print("GyroErrorY: ");
-  Serial.println(GyroErrorY);
-  Serial.print("GyroErrorZ: ");
-  Serial.println(GyroErrorZ);
+//  Serial.print("AccErrorX: ");
+//  Serial.println(AccErrorX);
+//  Serial.print("AccErrorY: ");
+//  Serial.println(AccErrorY);
+//  Serial.print("GyroErrorX: ");
+//  Serial.println(GyroErrorX);
+//  Serial.print("GyroErrorY: ");
+//  Serial.println(GyroErrorY);
+//  Serial.print("GyroErrorZ: ");
+//  Serial.println(GyroErrorZ);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -195,36 +160,12 @@ void calculateYaw() {
   }
 }//void calculateYaw
 
-// ================================================================
-// ===                      CAMERA RELATED                       ===
-// ================================================================
-#define LONG_PRESS 3000
-#define PIN_CAMERA 4
-long cameraStartime = 0;
-int cameraState = 0;
-
-void setupCamera(){
-  pinMode(PIN_CAMERA,OUTPUT);
-  cameraStartime = millis();
-}
-
-void switchOnOffCamera(){
-  digitalWrite(PIN_CAMERA,HIGH);
-  Serial.write("LP");
-  delay(LONG_PRESS);
-  digitalWrite(PIN_CAMERA,LOW);
-  cameraState = 1;
-}
 
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
 
-void setup() {
-
-  setupCamera();
-  switchOnOffCamera();
-  cameraState = 1;  //.i.e. ON
+void initStabilize() {
   
   // join I2C bus (I2Cdev library doesn't do this automatically)
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -234,11 +175,11 @@ void setup() {
   Fastwire::setup(400, true);
 #endif
 
-  // initialize serial communication
-  // (115200 chosen because it is required for Teapot Demo output, but it's
-  // really up to you depending on your project)
-  Serial.begin(38400);
-  while (!Serial); // wait for Leonardo enumeration, others continue immediately
+//  // initialize serial communication
+//  // (115200 chosen because it is required for Teapot Demo output, but it's
+//  // really up to you depending on your project)
+//  Serial.begin(38400);
+//  while (!Serial); // wait for Leonardo enumeration, others continue immediately
 
 //   ================================================================
 // ===              InSETUP:  MY CODE FOR CALCULATING GYRO ERRORS        ===
@@ -303,8 +244,7 @@ void setup() {
 
   // Define the pins to which the 3 servo motors are connected
   servo0.attach(10);
-//  servo1.attach(9);
-//  servo2.attach(8);
+  
   Serial.println("SETUP FINISHED");
 
   //SELF CALLIBRATION:
@@ -324,41 +264,63 @@ void setup() {
 // ===                     LOOP                       ===
 // ================================================================
 
-void loop() {
+void stabilizeLoop() {
   calculateYaw();
   ypr[0] = ypr[0] - correct;
 
   Serial.print(String(ypr[0]) + "\t");
   
   //TO KEEP RANGE OF YAW FROM -180 to 180
-  if(ypr[0] > 180){
-    ypr[0] = 360 - ypr[0];
-  }else if(ypr[0] < -180){
-    ypr[0] = 360 + ypr[0];
+  yaw0 = ypr[0];
+  if(yaw0 > 180){
+    yaw0 = 360 - ypr[0];
+  }else if(yaw0 < -180){
+    yaw0 = 360 + ypr[0];
   }
 
-  Serial.println(String(ypr[0]));  
+  Serial.println(String(yaw0));  
+  //Logic 1:
   rotateServo();  
 
-  //Switching off the camera after 1 minute
-  if((millis() - cameraStartime) > 120000 && cameraState == 1){
-    switchOnOffCamera();  
-    digitalWrite(13,LOW); 
-    cameraState = 0;
-  }
+  //Logic 2:
+//  rotateServoClockwise();
 }
+///////////////////////////////// LOGIC 1: Basic//////////////////////////////////////////
+///////////////////////////////// To satbilize//////////////////////////////////////////
 
 void rotateServo(){
-  if(ypr[0] > 10){
-    servo0Speed = map(ypr[0], 0, 180, 1425, 1395);
+  if(yaw0 > 7){
+    servo0Speed = map(yaw0, 0, 50, 1425, 1395);
+    if(yaw0 > 50) 
+        servo0Speed= 1000;
+    
     rotateServoClockwise(servo0Speed);
-  }else if(ypr[0] < -10){
-    servo0Speed = map(ypr[0], -180, 0, 1585, 1555);
+  }else if(yaw0 < -7){
+    servo0Speed = map(yaw0, -50, 0, 1585, 1555);
+    if(yaw0 < -50) 
+        servo0Speed= 2000;
     rotateServoAntiClockwise(servo0Speed);
   }else{
     stopServo();
   }
 }
+
+///////////////////////////////// LOGIC 2: Assuming Payload will rotate clockwise//////////////////////////////////////////
+///////////////////////////////// To satbilize//////////////////////////////////////////
+void rotateServoClockwise(){
+  if(yaw0 > 0){
+    servo0Speed = map(yaw0, -5, 50, 1425, 1395);
+    if(yaw0 > 50) 
+        servo0Speed= 1000;
+    
+    rotateServoClockwise(servo0Speed);
+  }else if(yaw0 < 0){
+    stopServo();
+  }
+}
+
+
+
 
 //Continuous servo rotates clockwise for Servo.write() value between 0 to 89;
 void rotateServoClockwise(int servoSpeed){

@@ -8,11 +8,11 @@ String getGPSTime(){
 }
 
 String getGPSLat(){
-  return getDataInThisFormat(gps.location.lat(), gps.location.isValid(), 4);
+  return getDataInThisFormat(gps.location.lat(), gps.location.isValid(), 6);
 }
 
 String getGPSLong(){
-  return getDataInThisFormat(gps.location.lng(), gps.location.isValid(), 4);
+  return getDataInThisFormat(gps.location.lng(), gps.location.isValid(), 6);
 }
 
 String getGPSAlt(){
@@ -37,7 +37,7 @@ void smartDelay(unsigned long ms)
   } while (millis() - start < ms);
 }
 
-String getDataInThisFormat(float val, bool valid, int prec)                              //Function to print float values
+String getDataInThisFormat(double val, bool valid, int prec)                              //Function to print float values
 {
   if (!valid)
   {
@@ -45,9 +45,7 @@ String getDataInThisFormat(float val, bool valid, int prec)                     
   }
   else
   {
-    String toReturn = String(val);
-    int decimalPoint = toReturn.indexOf(".");
-    toReturn = toReturn.substring(0,decimalPoint+prec+1);
+    String toReturn = String(val,prec);
     return toReturn;
   }
   smartDelay(0);

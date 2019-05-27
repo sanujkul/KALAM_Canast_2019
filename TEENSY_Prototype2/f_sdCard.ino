@@ -13,18 +13,23 @@ String timeStamp = "2013-10-22T01:37:56+05:30";  //UTC Format: 1994-11-05T08:15:
   */
 void initSD(){ 
   //----------Setting up sd card-----------//
+#ifdef SER_DEBUG
+    Serial.print("Initializing SD card...");
+#endif  
   
-  Serial.print("Initializing SD card...");
   
   
   if (!SD.begin(SD_SELECT)) {
+#ifdef SER_DEBUG
     Serial.println("initialization failed!");
+#endif
     // don't do anything more:
 //    while (1);
   }
 
   Serial.println("initialization done.");
-
+  xbee.println("initialization done.");
+  
   //initializing packetFile and missionLog objects declared in TEENSY_prototype
   packetFile  = newFile(packetFileName, packetFileExt);
   missionLog  = newFile(missionFileName, missionFileExt); 
