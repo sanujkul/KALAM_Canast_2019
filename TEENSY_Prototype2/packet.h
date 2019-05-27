@@ -45,7 +45,7 @@ class packet {
 		volatile int roll;			// the tilt angle of the roll axis in degrees. The resolution must be 1 degree.
 		volatile uint16_t blade_spin_rate;	// the rate the auto-gyro blades spin relative to the science payload. The units must be in revolutions per minute (rpm). The resolution must be 1 rpm.
 		volatile int software_state;			// the operating state of the software. (boot, idle, launch detect, deploy, etc.)
-		volatile int bonus_direction;	// the direction the camera is pointed relative to earth’s magnetic north specified in degrees.
+		String bonus_direction;	// the direction the camera is pointed relative to earth’s magnetic north specified in degrees.
 		
 		//Other variables
 		String _csv_string;			//locally stores output of toString()

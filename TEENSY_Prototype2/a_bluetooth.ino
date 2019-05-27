@@ -1,23 +1,18 @@
-int cam = -1;
+String cam;
 
 void initBluetooth() {
    Serial2.begin(9600); //communication rate of the Bluetooth module
-   cam = 0;
+   cam = -1;
+//   Serial2.setTimeout(100);
 }
 
-int getCameraDirection() {
-  cam = -1;
-  long BTTimeStart = millis();
-  Serial2.print("1\n");
-  while(!Serial2.available()){ // Checks whether data is comming from the Serial2 port
-//    Serial.println("Recieve Some data");
-     // Reads the data from the Serial2 port
-     if(millis() - BTTimeStart > 50){
-      break;
-     }
-  }
-  if(Serial2.available()){
-    cam = Serial2.parseInt();
- }
- return cam;
+String getCameraDirection() {
+  cam = "-1";
+  Serial2.print("1");
+  cam = Serial2.readString();
+  return cam;
+}
+
+void sendCommandtoCamera(int com){
+  Serial2.print(String(com));
 }

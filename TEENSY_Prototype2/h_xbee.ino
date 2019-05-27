@@ -20,6 +20,9 @@ void xbeeMessegeReceived(){
     case 3:Serial.println("Recieved 3: Buzzer Rok Do");
            recieve3();
            break;
+    case 4:Serial.println("Recieved 4: Send servo On and camera On command to Camera Subsystem");
+           recieve4();
+           break;
     case 9://Detach the interrupt and stop this ISR if user ground station sends 9
            detachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN));
            break; 
@@ -68,6 +71,17 @@ void recieve3(){
     delay(1000);
   }
   buzzerRokDo();
+//  digitalWrite(BUZZERPIN,LOW);
+  attachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN), xbeeMessegeReceived, RISING);
+}
+
+void recieve4(){
+  detachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN));
+  for(int i=0;i<2;i++){
+    Serial.println("Sending to Camera in: "+String(2-(i+1))+"second");
+    delay(1000);
+  }
+  sendCommandtoCamera(2);
 //  digitalWrite(BUZZERPIN,LOW);
   attachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN), xbeeMessegeReceived, RISING);
 }

@@ -21,7 +21,7 @@ packet::packet(const uint16_t team_id){
 	this->roll = 0;
 	this->blade_spin_rate = 0;
 	this->software_state = BOOT;
-	this->bonus_direction = 0;
+	this->bonus_direction = "0";
 }
 
 String packet::toString(){
@@ -42,7 +42,7 @@ String packet::toString(){
 		String(this->roll) + "," +
 		String(this->blade_spin_rate) + "," +
 		String(this->software_state) + "," +
-		String(this->bonus_direction)
+		this->bonus_direction
 	);
 	//this->_csv_string = csv;
   return csv;
@@ -69,7 +69,7 @@ void packet::display(){
 		Serial.println("Roll\t\t\t:\t\t" + String(this->roll) + "\tdeg");
 		Serial.println("Blade Spin Rate\t\t:\t\t" + String(this->blade_spin_rate) + "\tRPM");
 		Serial.println("Op state\t\t:\t\t" + String(this->software_state) + "");
-		Serial.println("Direction\t\t:\t\t" + String(this->bonus_direction) + "\tdeg");
+		Serial.println("Direction\t\t:\t\t" + this->bonus_direction + "\tdeg");
 		Serial.println("======================================================\n\n");
 	#endif
 }
