@@ -21,4 +21,4 @@
 #define PIN_CAMERA 4
 
 #define SER_DEBUG
-#undef SER_DEBUG//
+#undef SER_DEBUG///

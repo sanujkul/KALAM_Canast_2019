@@ -250,13 +250,19 @@ void initStabilize() {
 //  Serial.println("SETUP FINISHED");
 
   //SELF CALLIBRATION:
-//  Seria/l.println("SELF CALLIBRATION STARTED");
+  
+#ifdef SER_DEBUG
+  Serial.println("SELF CALLIBRATION STARTED");  
+#endif
   //For 2000 times, we'll record yaw values
   for(int i=0; i<2000; i++){
     calculateYaw();
     correct = ypr[0];
   }
-//  Serial.println("SELF CALLIBRATION STARTED");/
+#ifdef SER_DEBUG
+  Serial.println("SELF CALLIBRATION FINISHED");  
+#endif
+  
   //This will indicate that callibration is finished:
   pinMode(13,OUTPUT);
   digitalWrite(13,HIGH);
@@ -288,7 +294,9 @@ void stabilizeLoop() {
   
   if(startServoRotation){
     //Logic 1:
-    rotateServo();
+    rotateServo();//
+    //Logic 1:
+//    rotateServo2();   //Worse than logic 1/
     //Logic 2:
 //  rotateServoClockwise();  
   }
@@ -307,6 +315,20 @@ void rotateServo(){
     servo0Speed = map(yaw0, -70, 0, 1585, 1555);
     if(yaw0 < -70) 
         servo0Speed= 2000;
+    rotateServoAntiClockwise(servo0Speed);
+  }else{
+    stopServo();
+  }
+}
+
+///////////////////////////////// LOGIC 2: Basic//////////////////////////////////////////
+///////////////////////////////// To satbilize//////////////////////////////////////////
+void rotateServo2(){
+  if(ypr[0] > 10){
+    servo0Speed = map(ypr[0], 0, 180, 1425, 1395);
+    rotateServoClockwise(servo0Speed);
+  }else if(ypr[0] < -10){
+    servo0Speed = map(ypr[0], -180, 0, 1585, 1555);
     rotateServoAntiClockwise(servo0Speed);
   }else{
     stopServo();
