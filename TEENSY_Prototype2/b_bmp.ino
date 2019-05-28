@@ -16,7 +16,7 @@ void initBmp(){
                   Adafruit_BMP280::FILTER_OFF,      /* Filtering. */
                   Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */	
 
-  setGroundAltitude();              
+               
 }
 
 void setGroundAltitude(){
@@ -25,6 +25,10 @@ void setGroundAltitude(){
     sum += bmp.readAltitude(1013.25);
   }
   ground_altitude = sum/2000;
+}
+
+void setGroundAltitude(float alt){
+  ground_altitude = alt;
 }
 
 volatile float getBMPAltitute(){
