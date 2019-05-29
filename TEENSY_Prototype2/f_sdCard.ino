@@ -7,7 +7,7 @@ String missionFileExt = "log";
 String completeMissionFileName;
 
 String backupFileName = "backup.txt";
-String backupPacketName = "packetcount.txt";
+String backupPacketName = "count.txt";
 
 String timeStamp = "2013-10-22T01:37:56+05:30";  //UTC Format: 1994-11-05T08:15:30-05:00 corresponds to November 5, 1994, 8:15:30 am, US Eastern Standard Time.
 
@@ -219,15 +219,14 @@ bool doesBackUpExist(){
   }else{
     //Then create a new backup File
     Serial.println("No backup file found, creating one");
+    
     backup = SD.open(backupFileName,FILE_WRITE);
     backup.close();
-
-    backupPacketCount = SD.open(backupPacketName,FILE_WRITE);
-    backupPacketCount.close();
     
     return false;
   }
 }
+
 
 void saveBackUp(){
   backup = SD.open(backupFileName,FILE_WRITE);
@@ -291,7 +290,24 @@ void callibrateUsingPrevDatafromSD(){
   
 }
 
-void setPacketCountFromSD(){
+bool doesBackUpPacketExist(){
+  if(SD.exists(backupPacketName)){
+    #ifdef SER_DEBUG
+      Serial.println("Found Backup of Packet Count.");
+    #endif
+    return true;
+  }else{
+    //Then create a new backup Packet File
+    Serial.println("No backup file for PACKETS found, creating one");
+
+    backupPacketCount = SD.open(backupPacketName,FILE_WRITE);
+    backupPacketCount.close();
+    
+    return false;
+  }
+}
+
+int setPacketCountFromSD(){
   Serial.println("Getting packet count from PacketFile");
   String text = "";
   
@@ -305,15 +321,15 @@ void setPacketCountFromSD(){
     backupPacketCount.close();
   }else{
     Serial.println("No packetsFile object file found");
-    return;
+    return 0;
   }
 //  Serial.println(text);
   
   
   int pos = text.lastIndexOf(",");
-  String packetCount = text.substring(pos+1);
-  Serial.println("PACKET COUNT WAS : "+packetCount);
-  dataPacket.packet_count = packetCount.toInt();
+  String packetCounter = text.substring(pos+1);
+  Serial.println("PACKET COUNT WAS : "+packetCounter);
+  return packetCounter.toInt();
 }
 
 void savePacketCount(){

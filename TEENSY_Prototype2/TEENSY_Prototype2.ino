@@ -3,7 +3,7 @@
 #include "pindef.h"
 
 packet dataPacket(TEAM_ID); 
-uint64_t packetCount = 0;
+int packetCount = 0;
 
 //////////////////////////I2C Objects Initialization=================================
 Adafruit_BMP280 bmp;    //1. BMP object: I2C interface //Used "Wire"
@@ -68,6 +68,13 @@ void setup() {
 
     //Save backup of this updated data
     saveBackUp();
+  }
+
+  bool backUpPacketThere = doesBackUpPacketExist();
+  if(backUpPacketThere){
+    packetCount = setPacketCountFromSD();
+  }else{
+    packetCount = 0;
   }
   
   //UART Devices Initialization===============================
