@@ -33,9 +33,10 @@ volatile unsigned long countStartTime = 0;
 
 /////////////////////////////////________________________ SETUP ________________________/////////////////////////////////
 void setup() {
-  delay(2000);
+  
 #ifdef SER_DEBUG
   //Opening SErial Monitor
+  delay(2000);
   Serial.begin(9600);
   while(!Serial);
 #endif
@@ -74,6 +75,7 @@ void setup() {
   if(backUpPacketThere){
     packetCount = setPacketCountFromSD();
   }else{
+    Serial.println("packetCount = 0");
     packetCount = 0;
   }
   
@@ -126,7 +128,7 @@ void loop() {
     setGPSValues();
     smartDelay(800);
 //====================================SOFTWARE STATE====================================================
-    setSoftwareState();
+    setSoftwareState2();
     //====================================BLADE_SPIN=====================================================
     dataPacket.blade_spin_rate = giveRPM(countStartTime);
     makeCountZero();
@@ -164,17 +166,44 @@ void setGPSValues(){
 //When presAlt >670 and currAlt < prevAlt : Software state = 3 = DEPLOYMENT (from rocket)
 //When presAlt <450 and currAlt < prevAlt : Software state = 4 = DESCENT (seperated from Container)
 //When presAlt <5 and   currAlt < prevAlt : Software state = 5 = END
-void setSoftwareState(){
-  if(prevAlt > 5 && dataPacket.altitude > prevAlt && dataPacket.software_state == BOOT){
-    dataPacket.software_state = ACCENT; //(i.e. 2)
-  }else if(dataPacket.altitude > 670 && dataPacket.altitude < prevAlt && dataPacket.software_state == ACCENT){
-    dataPacket.software_state = DEPLOYMENT; //(i.e. 3)
-  }else if(dataPacket.altitude < 450 /*&& dataPacket.altitude < prevAlt*/ && dataPacket.software_state == DEPLOYMENT){
-    dataPacket.software_state = DESCENT; //(i.e. 4)
-  }else if(dataPacket.altitude < 5 /*&& dataPacket.altitude < prevAlt*/ && dataPacket.software_state == DESCENT){
-    dataPacket.software_state = END; //(i.e. 5)
-    buzzerBajaDo();
+//void setSoftwareState(){
+//  if(prevAlt > 5 && dataPacket.altitude > prevAlt && dataPacket.software_state == BOOT){
+//    dataPacket.software_state = ACCENT; //(i.e. 2)
+//  }else if(dataPacket.altitude > 670 && dataPacket.altitude < prevAlt && dataPacket.software_state == ACCENT){
+//    dataPacket.software_state = DEPLOYMENT; //(i.e. 3)
+//  }else if(dataPacket.altitude < 450 /*&& dataPacket.altitude < prevAlt*/ && dataPacket.software_state == DEPLOYMENT){
+//    dataPacket.software_state = DESCENT; //(i.e. 4)
+//  }else if(dataPacket.altitude < 5 /*&& dataPacket.altitude < prevAlt*/ && dataPacket.software_state == DESCENT){
+//    dataPacket.software_state = END; //(i.e. 5)
+//    buzzerBajaDo();
+//  }
+//  prevAlt = dataPacket.altitude;
+////  Serial.println("PREVALT = "+String(prevAlt));
+//}
+
+void setSoftwareState2(){
+  int oldSoftState = dataPacket.software_state;
+  switch(oldSoftState){
+    case BOOT:  
+          if(dataPacket.altitude > 5) dataPacket.software_state = ACCENT;
+          break;
+    case ACCENT:
+          if(dataPacket.altitude > 650) dataPacket.software_state = DEPLOYMENT;
+          break;
+    case DEPLOYMENT:
+          if(dataPacket.altitude < 500) dataPacket.software_state = DESCENT;
+          //Sending command to camera subsystem
+          sendCommandtoCamera(SWITCHONCAMERASERVO);      //2 is switch on camera and servo command
+          break;
+    case DESCENT:
+          if(dataPacket.altitude < 5) dataPacket.software_state = END;
+          buzzerBajaDo();
+          break;
+    default: break;
   }
-  prevAlt = dataPacket.altitude;
-//  Serial.println("PREVALT = "+String(prevAlt));
+
+  if(oldSoftState != dataPacket.software_state){
+    backupUpdatedSoftwareState(dataPacket.software_state);
+  }
+//  prevAlt = dataPacket.altitude;
 }

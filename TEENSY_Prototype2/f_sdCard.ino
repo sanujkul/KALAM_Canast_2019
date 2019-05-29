@@ -239,6 +239,16 @@ void saveBackUp(){
   }
 }
 
+void backupUpdatedSoftwareState(int state){
+  backup = SD.open(backupFileName,FILE_WRITE);
+  if(backup){
+    Serial.println("Storing new Software state for backup");
+    backup.print(","+String(state));
+    backup.close();
+  }else{
+    Serial.println("No backup file Found");
+  }
+}
 
 void callibrateUsingPrevDatafromSD(){
   Serial.println("Getting last mission time from Backup");

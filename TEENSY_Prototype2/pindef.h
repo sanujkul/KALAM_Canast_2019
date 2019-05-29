@@ -34,4 +34,8 @@
 
 //#undef SER_DEBUG
 
+
+#define SWITCHONCAMERASERVO 2
+#define SWITCHONCAMERA 3
+
 #define TEAM_ID 3279		//TEAM KALAM
