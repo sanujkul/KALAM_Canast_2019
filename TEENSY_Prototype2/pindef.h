@@ -32,7 +32,7 @@
 #define LOG_MISSION	//enable this to log mission events to SD card
 #define SER_DEBUG		//enable this to get debug info in serial monitor
 
-//#undef SER_DEBUG
+#undef SER_DEBUG
 
 
 #define SWITCHONCAMERASERVO 2

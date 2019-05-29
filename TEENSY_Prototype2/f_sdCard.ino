@@ -212,14 +212,15 @@ String getTimeStamp(){
 //back up file will store last mission time:
 bool doesBackUpExist(){
   if(SD.exists(backupFileName)){
-    #ifdef SER_DEBUG
+#ifdef SER_DEBUG
       Serial.println("Found Backup.");
-    #endif
+#endif
     return true;
   }else{
     //Then create a new backup File
+#ifdef SER_DEBUG
     Serial.println("No backup file found, creating one");
-    
+#endif
     backup = SD.open(backupFileName,FILE_WRITE);
     backup.close();
     
@@ -231,27 +232,38 @@ bool doesBackUpExist(){
 void saveBackUp(){
   backup = SD.open(backupFileName,FILE_WRITE);
   if(backup){
+#ifdef SER_DEBUG
     Serial.println("Storing All useful data to backup");
+#endif
     backup.print(String(startTime)+","+String(ground_altitude)+","+String(mpu6050.getGyroXoffset())+","+String(mpu6050.getGyroYoffset())+","+String(mpu6050.getGyroZoffset())+","+String(dataPacket.software_state));
     backup.close();
   }else{
+#ifdef SER_DEBUG
     Serial.println("No backup file Found");
+#endif
   }
 }
 
 void backupUpdatedSoftwareState(int state){
   backup = SD.open(backupFileName,FILE_WRITE);
   if(backup){
+#ifdef SER_DEBUG
     Serial.println("Storing new Software state for backup");
+#endif
     backup.print(","+String(state));
     backup.close();
   }else{
+#ifdef SER_DEBUG
     Serial.println("No backup file Found");
+#endif
   }
 }
 
 void callibrateUsingPrevDatafromSD(){
-  Serial.println("Getting last mission time from Backup");
+#ifdef SER_DEBUG
+    Serial.println("Getting last mission time from Backup");
+#endif
+  
   String text = "";
   backup = SD.open(backupFileName);
 
@@ -260,7 +272,10 @@ void callibrateUsingPrevDatafromSD(){
     text += c;
 //    Serial.print(c);
   }
-  Serial.println(text);
+#ifdef SER_DEBUG
+    Serial.println(text);
+#endif  
+  
   backup.close();
   
   //First Field is startTime of Mission from RTC
@@ -302,14 +317,15 @@ void callibrateUsingPrevDatafromSD(){
 
 bool doesBackUpPacketExist(){
   if(SD.exists(backupPacketName)){
-    #ifdef SER_DEBUG
+#ifdef SER_DEBUG
       Serial.println("Found Backup of Packet Count.");
-    #endif
+#endif
     return true;
   }else{
     //Then create a new backup Packet File
-    Serial.println("No backup file for PACKETS found, creating one");
-
+#ifdef SER_DEBUG
+     Serial.println("No backup file for PACKETS found, creating one");
+#endif  
     backupPacketCount = SD.open(backupPacketName,FILE_WRITE);
     backupPacketCount.close();
     
@@ -318,7 +334,10 @@ bool doesBackUpPacketExist(){
 }
 
 int setPacketCountFromSD(){
-  Serial.println("Getting packet count from PacketFile");
+#ifdef SER_DEBUG
+     Serial.println("Getting packet count from PacketFile");
+#endif 
+  
   String text = "";
   
   backupPacketCount = SD.open(backupPacketName);
@@ -330,7 +349,10 @@ int setPacketCountFromSD(){
     }
     backupPacketCount.close();
   }else{
-    Serial.println("No packetsFile object file found");
+#ifdef SER_DEBUG
+     Serial.println("No packetsFile object file found");
+#endif 
+    
     return 0;
   }
 //  Serial.println(text);
@@ -345,10 +367,15 @@ int setPacketCountFromSD(){
 void savePacketCount(){
   backupPacketCount = SD.open(backupPacketName,FILE_WRITE);
   if(backupPacketCount){
-    Serial.println("Storing All packet count data to backupPacketCount");
+#ifdef SER_DEBUG
+     Serial.println("Storing All packet count data to backupPacketCount");
+#endif
     backupPacketCount.print(","+String(dataPacket.packet_count));
     backupPacketCount.close();
   }else{
-    Serial.println("No backupPacketCount file Found");
+#ifdef SER_DEBUG
+     Serial.println("No backupPacketCount file Found");
+#endif    
+    
   }
 }
