@@ -1,4 +1,4 @@
-bool startServoRotation;
+bool startServoRotation = false;
 int servo0Speed = 1500;
 float yaw0 = 0;                    //This variable can be used to save yaw values
 float correct;
@@ -167,7 +167,7 @@ void calculateYaw() {
 // ================================================================
 
 void initStabilize() {
-  startServoRotation = false;
+  startServoRotation = true;              //SET IT FALSE. TRU FOR TESTING PURPOSES
   
   // join I2C bus (I2Cdev library doesn't do this automatically)
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
@@ -250,13 +250,19 @@ void initStabilize() {
 //  Serial.println("SETUP FINISHED");
 
   //SELF CALLIBRATION:
-//  Seria/l.println("SELF CALLIBRATION STARTED");
+  
+#ifdef SER_DEBUG
+  Serial.println("SELF CALLIBRATION STARTED");  
+#endif
   //For 2000 times, we'll record yaw values
   for(int i=0; i<2000; i++){
     calculateYaw();
     correct = ypr[0];
   }
-//  Serial.println("SELF CALLIBRATION STARTED");/
+#ifdef SER_DEBUG
+  Serial.println("SELF CALLIBRATION FINISHED");  
+#endif
+  
   //This will indicate that callibration is finished:
   pinMode(13,OUTPUT);
   digitalWrite(13,HIGH);
@@ -277,7 +283,7 @@ void stabilizeLoop() {
   //TO KEEP RANGE OF YAW FROM -180 to 180
   yaw0 = ypr[0];
   if(yaw0 > 180){
-    yaw0 = 360 - ypr[0];
+    yaw0 = -360 + ypr[0];
   }else if(yaw0 < -180){
     yaw0 = 360 + ypr[0];
   }
@@ -288,7 +294,9 @@ void stabilizeLoop() {
   
   if(startServoRotation){
     //Logic 1:
-    rotateServo();
+    rotateServo();//
+    //Logic 1:
+//    rotateServo2();   //Worse than logic 1/
     //Logic 2:
 //  rotateServoClockwise();  
   }
@@ -296,8 +304,26 @@ void stabilizeLoop() {
 }
 ///////////////////////////////// LOGIC 1: Basic//////////////////////////////////////////
 ///////////////////////////////// To satbilize//////////////////////////////////////////
-
 void rotateServo(){
+  if(yaw0 > 5){
+    servo0Speed = map(yaw0, 0, 110, 1425, 1395);
+    if(yaw0 > 70) 
+        servo0Speed= 1000;
+    rotateServoClockwise(servo0Speed);
+  }else if(yaw0 < -5){
+    servo0Speed = map(yaw0, -110, 0, 1585, 1550);
+    if(yaw0 < -70) 
+        servo0Speed= 2000;
+    rotateServoAntiClockwise(servo0Speed);
+  }else{
+    servo0Speed = 1500;
+    stopServo();
+  }
+//  Serial.print("    ");
+//  Serial.println(servo0Speed);
+}
+
+void rotateServo1(){
   if(yaw0 > 7){
     servo0Speed = map(yaw0, 0, 70, 1425, 1395);
     if(yaw0 > 70) 
@@ -307,6 +333,20 @@ void rotateServo(){
     servo0Speed = map(yaw0, -70, 0, 1585, 1555);
     if(yaw0 < -70) 
         servo0Speed= 2000;
+    rotateServoAntiClockwise(servo0Speed);
+  }else{
+    stopServo();
+  }
+}
+
+///////////////////////////////// LOGIC 2: Basic//////////////////////////////////////////
+///////////////////////////////// To satbilize//////////////////////////////////////////
+void rotateServo2(){
+  if(ypr[0] > 10){
+    servo0Speed = map(ypr[0], 0, 180, 1425, 1395);
+    rotateServoClockwise(servo0Speed);
+  }else if(ypr[0] < -10){
+    servo0Speed = map(ypr[0], -180, 0, 1585, 1555);
     rotateServoAntiClockwise(servo0Speed);
   }else{
     stopServo();
