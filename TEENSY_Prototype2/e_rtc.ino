@@ -1,5 +1,5 @@
 //Variable to store startTime of mission
-uint32_t startTime = 1546;  //Monday, January 7, 2019 12:09:02 AM GMT+05:30
+int startTime = 1546;  //Monday, January 7, 2019 12:09:02 AM GMT+05:30
 
 //Called in Setup to initialize RTC
 void initRTC(){
@@ -24,8 +24,12 @@ void resetMissionTime(){
   DateTime now = rtc.now();
   startTime = now.unixtime();
 }
+
+void setMissionTime(int t){
+  startTime = t;
+}
 //Returns the mission time: i.e. subtraction of "current unix time" and program's "startTime"
-uint32_t getMissionTime(){
+int getMissionTime(){
   DateTime now = rtc.now();
   return (now.unixtime() - startTime);
 }

@@ -42,8 +42,11 @@ packet* getPacket(File* packetFile, int line){
 
 boolean transmitPacketString(packet* dataPacket){
 	/*
-	Transmits packet as a csv string over zigbee
+	Transmits packet as a csv string over xbee
 	*/
+#ifdef SER_DEBUG
+    Serial.println("Sending via xbee : "+ dataPacket->toString());
+#endif
 	xbee.println(dataPacket->toString());
   return true;
 }

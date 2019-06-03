@@ -22,7 +22,7 @@
 
 class packet {
   public:
-		packet(const uint16_t team_id = 1516);	//assigned to BAGS
+		packet(const uint16_t team_id = 3279);	//assigned to KALAM
 		
 		/*
 		Variables to be transmitted
@@ -30,8 +30,8 @@ class packet {
 		*/
 		
 		uint16_t team_id;			// the assigned team identification
-		volatile uint16_t mission_time;	//the time since initial power up in seconds
-		volatile uint16_t packet_count;	// the count of transmitted packets, which is to be maintained through processor reset.
+		volatile int mission_time;	//the time since initial power up in seconds
+		volatile int packet_count;	// the count of transmitted packets, which is to be maintained through processor reset.
 		volatile float altitude;	// the altitude in units of meters and must be relative to ground level. The resolution must be 0.1 meters.
 		volatile float pressure;	//the measurement of atmospheric pressure in units of pascals. The resolution must be 0.1 pascals.
 		volatile float temperature;	// the sensed temperature in degrees C with one tenth of a degree resolution.

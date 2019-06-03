@@ -3,7 +3,7 @@
 #include "pindef.h"
 
 packet dataPacket(TEAM_ID); 
-uint64_t packetCount = 0;
+int packetCount = 0;
 
 //////////////////////////I2C Objects Initialization=================================
 Adafruit_BMP280 bmp;    //1. BMP object: I2C interface //Used "Wire"
@@ -17,7 +17,10 @@ TinyGPSPlus gps;        //4. The TinyGPS++ object
 
 //////////////////////////5. File Objects for SDCARD=================================
 File packetFile;    //file handle for packet.csv
-File missionLog;  //file handle for missin.log
+File missionLog;  //file handle for mission.log
+
+File backup;  // File handle for backup.txt that will store callibrated values.
+File backupPacketCount;
 //////////////////////////6. XBEE=================================
    //NOthing comes here
 //////////////////////////7. HALL SENSOR=================================   
@@ -30,29 +33,56 @@ volatile unsigned long countStartTime = 0;
 
 /////////////////////////////////________________________ SETUP ________________________/////////////////////////////////
 void setup() {
-  delay(2000);
+  
 #ifdef SER_DEBUG
   //Opening SErial Monitor
+  delay(2000);
   Serial.begin(9600);
   while(!Serial);
 #endif
 
+//SPI Devices Initialization=====================================
+  initSD();
+  
+  //===========>> BACKUP CODE //FOR BACKING UP MISSION TIME IN SD CARD
+  int lastMissionTime = 0;
+  bool backUpThere = doesBackUpExist();
+  Serial.println("BACKUP? = "+String(backUpThere));
+  initializeSDFiles(backUpThere);
+  
   //I2C Devices Initialization======================================
   Wire.begin();         //I2C Wire initialization
-  initBmp();            //BMP
   initRTC();            //RTC
-  resetMissionTime();   //To initialize the startTime variable
+  initBmp();            //BMP
   mpu6050.begin();      //MPU
-  mpu6050.calcGyroOffsets(true);
+  
+  if(backUpThere){
+    callibrateUsingPrevDatafromSD();
+    setPacketCountFromSD();
+  }else{  //if There is no backup file
+    //RTC :
+    resetMissionTime();   //To initialize the startTime variable
+    setGroundAltitude(); 
+    mpu6050.calcGyroOffsets(true);
+    //SOFTWARE STATE==============================
+    dataPacket.software_state = BOOT;
+
+    //Save backup of this updated data
+    saveBackUp();
+  }
+
+  bool backUpPacketThere = doesBackUpPacketExist();
+  if(backUpPacketThere){
+    packetCount = setPacketCountFromSD();
+  }else{
+    Serial.println("packetCount = 0");
+    packetCount = 0;
+  }
   
   //UART Devices Initialization===============================
   xbee.begin(9600);       //XBEE initializing
   initXBee();
   
-  
-  //SPI Devices Initialization=====================================
-  initSD();
-
   //Battery Voltage:
   initBatteryVoltage();
 
@@ -64,14 +94,13 @@ void setup() {
 
   //HALL=============================================================
   initHall();
-
-  //SOFTWARE STATE=============================================================
-  dataPacket.software_state = BOOT;
-
   //
   buzzerPinInIt();
 
   initBluetooth();
+
+
+  
 } 
 
 //long loopStartTime = 0;
@@ -80,7 +109,7 @@ void setup() {
 void loop() {
 //  loopStartTime = millis()/10000;
   mpu6050.update();
-  if(1){
+  
     packetCount++;
     //====================================PACKET_COUNT
     dataPacket.packet_count = packetCount;
@@ -99,22 +128,28 @@ void loop() {
     setGPSValues();
     smartDelay(800);
 //====================================SOFTWARE STATE====================================================
-    setSoftwareState();
+    setSoftwareState2();
     //====================================BLADE_SPIN=====================================================
     dataPacket.blade_spin_rate = giveRPM(countStartTime);
     makeCountZero();
     countStartTime = millis()%10000;  //unit is in miliseconds
     //================================================================================================
+    dataPacket.bonus_direction = getCameraDirection();
+
 #ifdef SER_DEBUG
     dataPacket.display();
 #endif
-    //Sending data via xbee
+    //Saving packet to sd card
     savePacket(&dataPacket);
+    
+    //Backing up PacketCount to SD card:
+    savePacketCount();
+    //Sending data via xbee
     transmitPacketString(&dataPacket);
-
-    dataPacket.bonus_direction = getCameraDirection();
+    
+    
 //    Serial.println(dataPacket.bonus_direction)
-  }
+  
   
 }
 
@@ -131,17 +166,44 @@ void setGPSValues(){
 //When presAlt >670 and currAlt < prevAlt : Software state = 3 = DEPLOYMENT (from rocket)
 //When presAlt <450 and currAlt < prevAlt : Software state = 4 = DESCENT (seperated from Container)
 //When presAlt <5 and   currAlt < prevAlt : Software state = 5 = END
-void setSoftwareState(){
-  if(prevAlt > 5 && dataPacket.altitude > prevAlt && dataPacket.software_state == BOOT){
-    dataPacket.software_state = ACCENT; //(i.e. 2)
-  }else if(dataPacket.altitude > 670 && dataPacket.altitude < prevAlt && dataPacket.software_state == ACCENT){
-    dataPacket.software_state = DEPLOYMENT; //(i.e. 3)
-  }else if(dataPacket.altitude < 450 /*&& dataPacket.altitude < prevAlt*/ && dataPacket.software_state == DEPLOYMENT){
-    dataPacket.software_state = DESCENT; //(i.e. 4)
-  }else if(dataPacket.altitude < 5 /*&& dataPacket.altitude < prevAlt*/ && dataPacket.software_state == DESCENT){
-    dataPacket.software_state = END; //(i.e. 5)
-    buzzerBajaDo();
+//void setSoftwareState(){
+//  if(prevAlt > 5 && dataPacket.altitude > prevAlt && dataPacket.software_state == BOOT){
+//    dataPacket.software_state = ACCENT; //(i.e. 2)
+//  }else if(dataPacket.altitude > 670 && dataPacket.altitude < prevAlt && dataPacket.software_state == ACCENT){
+//    dataPacket.software_state = DEPLOYMENT; //(i.e. 3)
+//  }else if(dataPacket.altitude < 450 /*&& dataPacket.altitude < prevAlt*/ && dataPacket.software_state == DEPLOYMENT){
+//    dataPacket.software_state = DESCENT; //(i.e. 4)
+//  }else if(dataPacket.altitude < 5 /*&& dataPacket.altitude < prevAlt*/ && dataPacket.software_state == DESCENT){
+//    dataPacket.software_state = END; //(i.e. 5)
+//    buzzerBajaDo();
+//  }
+//  prevAlt = dataPacket.altitude;
+////  Serial.println("PREVALT = "+String(prevAlt));
+//}
+
+void setSoftwareState2(){
+  int oldSoftState = dataPacket.software_state;
+  switch(oldSoftState){
+    case BOOT:  
+          if(dataPacket.altitude > 5) dataPacket.software_state = ACCENT;
+          break;
+    case ACCENT:
+          if(dataPacket.altitude > 650) dataPacket.software_state = DEPLOYMENT;
+          break;
+    case DEPLOYMENT:
+          if(dataPacket.altitude < 500) dataPacket.software_state = DESCENT;
+          //Sending command to camera subsystem
+          sendCommandtoCamera(SWITCHONCAMERASERVO);      //2 is switch on camera and servo command
+          break;
+    case DESCENT:
+          if(dataPacket.altitude < 5) dataPacket.software_state = END;
+          buzzerBajaDo();
+          break;
+    default: break;
   }
-  prevAlt = dataPacket.altitude;
-//  Serial.println("PREVALT = "+String(prevAlt));
+
+  if(oldSoftState != dataPacket.software_state){
+    backupUpdatedSoftwareState(dataPacket.software_state);
+  }
+//  prevAlt = dataPacket.altitude;
 }
