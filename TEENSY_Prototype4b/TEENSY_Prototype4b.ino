@@ -2,7 +2,7 @@
             //AD0 pin high
 #include "pindef.h"
 
-packet dataPacket(TEAM_ID); 
+packet dataPacket(TEAM_ID);
 int packetCount = 0;
 
 //////////////////////////I2C Objects Initialization=================================
@@ -69,9 +69,12 @@ void setup() {
     resetMissionTime();   //To initialize the startTime variable
     setGroundAltitude(); 
     mpu6050.calcGyroOffsets(true);
+    mpu6050.update();
+    setStartingPitch();
+    setStartingRoll();
     //SOFTWARE STATE==============================
     dataPacket.software_state = BOOT;
-
+    
     //Save backup of this updated data
 #ifdef SER_DEBUG
   Serial.println("Calling saveBackup function");
@@ -107,6 +110,7 @@ void setup() {
 
   initBluetooth();
 
+  
 
   
 } 
@@ -128,8 +132,8 @@ void loop() {
     //====================================RTC=========================================================
     dataPacket.mission_time = getMissionTime();
     //====================================MPU=========================================================
-    dataPacket.pitch = mpu6050.getAngleX();
-    dataPacket.roll  = mpu6050.getAngleY();
+    dataPacket.pitch = getRelativePitch();
+    dataPacket.roll  = getRelativeRoll();
     //====================================VOLTAGE========================================================================
     dataPacket.voltage = getBatteryVoltage();
     //====================================GPS====================================================
