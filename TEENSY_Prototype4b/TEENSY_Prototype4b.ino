@@ -128,7 +128,7 @@ void loop() {
     //====================================BMP=========================================================
     dataPacket.altitude = getBMPAltitute();
     dataPacket.pressure = bmp.readPressure();
-    dataPacket.temperature = bmp.readTemperature();
+    dataPacket.temperature = ((bmp.readTemperature())*(9/5)) + 32;
     //====================================RTC=========================================================
     dataPacket.mission_time = getMissionTime();
     //====================================MPU=========================================================
@@ -142,7 +142,7 @@ void loop() {
 //====================================SOFTWARE STATE====================================================
     setSoftwareState2();
     //====================================BLADE_SPIN=====================================================
-    dataPacket.blade_spin_rate = (dataPacket.software_state == DEPLOYMENT)?0:giveRPM(countStartTime);
+    dataPacket.blade_spin_rate = (dataPacket.software_state == DEPLOYMENT || dataPacket.altitude < 474)?giveRPM(countStartTime):0;
     makeCountZero();
     countStartTime = millis()%10000;  //unit is in miliseconds
     //================================================================================================
@@ -203,13 +203,18 @@ void setSoftwareState2(){
           if(dataPacket.altitude > 650) dataPacket.software_state = DEPLOYMENT;
           break;
     case DEPLOYMENT:
-          if(dataPacket.altitude < 500) dataPacket.software_state = DESCENT;
+          if(dataPacket.altitude < 472) {
+            dataPacket.software_state = DESCENT;
+            sendCommandtoCamera(SWITCHONCAMERASERVO);
+          }
           //Sending command to camera subsystem
-          sendCommandtoCamera(SWITCHONCAMERASERVO);      //2 is switch on camera and servo command
+                //2 is switch on camera and servo command
           break;
     case DESCENT:
-          if(dataPacket.altitude < 5) dataPacket.software_state = END;
-          buzzerBajaDo();
+          if(dataPacket.altitude < 20) {
+            dataPacket.software_state = END;
+            buzzerBajaDo();
+          }
           break;
     default: break;
   }

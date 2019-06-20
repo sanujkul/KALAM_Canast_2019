@@ -13,11 +13,7 @@ String getCameraDirection() {
   if(cam.length() == 0){
     return "-1";
   }
-
-  int dir = cam.toInt();
-  dir = dir/2;
-  return String(dir);
-  
+  return cam;
 }
 
 void sendCommandtoCamera(int com){

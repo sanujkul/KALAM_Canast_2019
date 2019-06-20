@@ -46,9 +46,7 @@ void calibrateSensors1(){
   }
 
   setGroundAltitude();  //FOR BMP
-//  mpu6050.calcGyroOffsets(true); //FOR MPU
-  setStartingPitch();
-  setStartingRoll();
+  mpu6050.calcGyroOffsets(true); //FOR MPU
   
   Serial.println("Callibration Finished");
   // Callibration finished:
@@ -88,7 +86,7 @@ void cameraCommand(int com){
   }
   sendCommandtoCamera(com);
 //  digitalWrite(BUZZERPIN,LOW);
-  attachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN), xbeeMessegeReceived, RISING);  
+  attachInterrupt(digitalPinToInterrupt(XBEE_INTERRUPT_PIN), xbeeMessegeReceived, RISING);
 }
 
 //

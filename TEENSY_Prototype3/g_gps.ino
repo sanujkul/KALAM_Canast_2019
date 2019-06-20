@@ -70,7 +70,7 @@ String getDateTime2(TinyGPSTime &t)
   else
   {
     char sz[32];
-    sprintf(sz, "%02d%02d%02d ", t.hour(), t.minute(), t.second());
+    sprintf(sz, "%02d:%02d:%02d ", t.hour(), t.minute(), t.second());
     String s(sz); 
     return s;
   }

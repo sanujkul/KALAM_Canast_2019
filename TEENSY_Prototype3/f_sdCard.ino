@@ -356,9 +356,11 @@ int setPacketCountFromSD(){
     return 0;
   }
 //  Serial.println(text);
-  
-  
+    
   int pos = text.lastIndexOf(",");
+  if(pos < 0){
+    return -1;
+  }
   String packetCounter = text.substring(pos+1);
   Serial.println("PACKET COUNT WAS : "+packetCounter);
   return packetCounter.toInt();
